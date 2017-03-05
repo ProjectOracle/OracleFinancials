@@ -3,3 +3,7 @@ WHENEVER SQLERROR FAILURE ROLLBACK
 
 SELECT sysdate FROM dual;
 /
+
+SELECT COUNT(*) FROM ap_invoice_headers_all;
+/
+
