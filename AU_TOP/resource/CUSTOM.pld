@@ -1,0 +1,77 @@
+------------------------------------------------------------
+PACKAGE BODY custom IS
+  --
+  -- Customize this package to provide specific responses to
+  -- events within Oracle Applications forms.
+  --
+  -- Do not change the specification of the CUSTOM package 
+  -- in any way.
+  --
+  ------------------------------------------------------------
+  function zoom_available return BOOLEAN is
+  --
+  -- This function allows you to specify if zooms exist for the
+  -- current context. If zooms are available for this block, then 
+  -- return TRUE; else return FALSE. 
+  --
+  -- This routine is called on a per-block basis within every
+  -- Applications form. Therefore, any code that will enable 
+  -- Zoom must test the current 
+  -- form and block from which the call is being made. 
+  --
+  -- By default this routine must return FALSE.
+ 
+        form_name  varchar2(30) := name_in('system.current_form');
+        block_name varchar2(30) := name_in('system.cursor_block'); 
+  begin
+        if (form_name = 'DEMXXEOR' and block_name = 'ORDERS') then
+          return TRUE;
+        else
+          return FALSE;
+        end if;
+  
+  end zoom_available;
+  ---------------------------------------------------------------
+  function style(event_name varchar2) return integer is
+  --
+  --  This Zoom example does not do anything to the STYLE function
+  begin  
+    return custom.standard;
+  end style;
+  ---------------------------------------------------------------
+  procedure event(event_name varchar2) is
+  --
+  -- This procedure allows you to execute your code at specific
+  -- events. 'ZOOM' or product-specific events will be passed
+  -- in event_name. See the Applications Technical Reference
+  -- manuals for a list of events that are available through 
+  -- this interface.
+ 
+        form_name  varchar2(30) := name_in('system.current_form');
+        block_name varchar2(30) := name_in('system.cursor_block'); 
+        param_to_pass1 varchar2(255);
+        param_to_pass2 varchar2(255);
+  BEGIN 
+        if (event_name = 'ZOOM') then  
+          if (form_name = 'DEMXXEOR' and block_name = 'ORDERS')
+            then
+            param_to_pass1 := name_in('ORDERS.order_id');
+            param_to_pass2 := name_in('ORDERS.customer_name');
+		/* use fnd_function.execute instead of open_form */
+            FND_FUNCTION.EXECUTE(FUNCTION_NAME=>'DEM_DEMXXEOR', 
+                                 OPEN_FLAG=>'Y', 
+                                 SESSION_FLAG=>'Y', 
+                                 OTHER_PARAMS=>
+                                'ORDER_ID="'||param_to_pass1||
+                                '" CUSTOMER_NAME="'||
+                                param_to_pass2||'"');
+		/* all the extra single and double quotes account for
+		   any spaces that might be in the passed values */
+          end if;
+        else
+          null;
+        end if;
+ 
+  end event;
+END custom;
+------------------------------------------------------------------
